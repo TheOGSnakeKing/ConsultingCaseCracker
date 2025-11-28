@@ -1654,15 +1654,18 @@
         }
 
         function flipCard() {
-            if (state.flipped) return;
+            state.flipped = !state.flipped;
             
-            state.flipped = true;
-            elements.flashcard.classList.add('flipped');
-            
-            // Show rating buttons after flip animation
-            setTimeout(() => {
-                elements.ratingSection.classList.add('show');
-            }, 300);
+            if (state.flipped) {
+                elements.flashcard.classList.add('flipped');
+                // Show rating buttons after flip animation
+                setTimeout(() => {
+                    elements.ratingSection.classList.add('show');
+                }, 300);
+            } else {
+                elements.flashcard.classList.remove('flipped');
+                elements.ratingSection.classList.remove('show');
+            }
         }
 
         function markAnswer(isCorrect) {
