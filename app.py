@@ -76,8 +76,8 @@ def register():
     users_collection.insert_one({
         'username': username,
         'passwordHash': hash_password(password),
-        'createdAt': datetime.now().isoformat(),
-        'lastActive': datetime.now().isoformat(),
+        'createdAt': datetime.utcnow().isoformat() + 'Z',
+        'lastActive': datetime.utcnow().isoformat() + 'Z',
         'sessions': []
     })
     
@@ -100,7 +100,7 @@ def login():
     # Update last active
     users_collection.update_one(
         {'username': username},
-        {'$set': {'lastActive': datetime.now().isoformat()}}
+        {'$set': {'lastActive': datetime.utcnow().isoformat() + 'Z'}}
     )
     
     return jsonify({'success': True, 'username': username})
@@ -153,17 +153,34 @@ def save_session():
         return jsonify({'error': 'User not found'}), 401
     
     session_data = request.get_json() or {}
+    session_id = session_data.get('sessionId')
     
-    # Add timestamp if not present
-    if 'timestamp' not in session_data:
-        session_data['timestamp'] = datetime.now().isoformat()
+    if not session_id:
+        return jsonify({'error': 'Session ID required'}), 400
     
-    # Append session and update last active
+    # Check if session already exists
+    existing_sessions = user.get('sessions', [])
+    session_exists = False
+    
+    for i, existing in enumerate(existing_sessions):
+        if existing.get('sessionId') == session_id:
+            # Update existing session
+            existing_sessions[i] = session_data
+            session_exists = True
+            break
+    
+    if not session_exists:
+        # Add new session
+        existing_sessions.append(session_data)
+    
+    # Update user with sessions and last active
     users_collection.update_one(
         {'username': username},
         {
-            '$push': {'sessions': session_data},
-            '$set': {'lastActive': datetime.now().isoformat()}
+            '$set': {
+                'sessions': existing_sessions,
+                'lastActive': datetime.utcnow().isoformat() + 'Z'
+            }
         }
     )
     

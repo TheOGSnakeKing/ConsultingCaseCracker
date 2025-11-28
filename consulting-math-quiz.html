@@ -1462,6 +1462,11 @@
         // ===== STATE =====
         let currentUser = null; // Will hold username after login
         
+        // Generate unique session ID
+        function generateSessionId() {
+            return 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        }
+        
         let state = {
             category: 'mixed',
             difficulty: 'all',
@@ -1478,6 +1483,7 @@
             questionsSinceWrong: 0, // Counter to space out repeat questions
             masteredWrong: [],      // Questions from wrongQueue that were answered correctly
             // Session tracking
+            sessionId: generateSessionId(),
             sessionStart: new Date().toISOString(),
             questionLog: []        // Log of all questions in this session
         };
@@ -1765,6 +1771,7 @@
             if (state.questionLog.length === 0 || !currentUser) return;
             
             const sessionData = {
+                sessionId: state.sessionId,
                 timestamp: state.sessionStart,
                 endTime: new Date().toISOString(),
                 totalQuestions: state.totalQuestions,
@@ -1826,13 +1833,15 @@
             let html = '';
             sessions.forEach((session, index) => {
                 const date = new Date(session.timestamp);
-                const dateStr = date.toLocaleDateString('en-US', { 
+                const dateStr = date.toLocaleString('en-US', { 
+                    timeZone: 'America/Chicago',
                     weekday: 'short', 
                     month: 'short', 
                     day: 'numeric',
                     hour: 'numeric',
-                    minute: '2-digit'
-                });
+                    minute: '2-digit',
+                    hour12: true
+                }) + ' CT';
                 
                 const accuracy = session.accuracy || 0;
                 let accuracyClass = 'poor';
@@ -1988,6 +1997,7 @@
             elements.userName.textContent = username;
             
             // Reset session for new login
+            state.sessionId = generateSessionId();
             state.sessionStart = new Date().toISOString();
             state.questionLog = [];
         }
@@ -2002,6 +2012,8 @@
             localStorage.removeItem('casecracker_user');
             
             // Reset state
+            state.sessionId = generateSessionId();
+            state.sessionStart = new Date().toISOString();
             state.totalQuestions = 0;
             state.correct = 0;
             state.incorrect = 0;
@@ -2143,6 +2155,7 @@
             if (state.questionLog.length > 0 && currentUser) {
                 // Use sendBeacon for reliable save on page close
                 const sessionData = {
+                    sessionId: state.sessionId,
                     timestamp: state.sessionStart,
                     endTime: new Date().toISOString(),
                     totalQuestions: state.totalQuestions,
