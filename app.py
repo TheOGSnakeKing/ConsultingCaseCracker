@@ -7,7 +7,7 @@ import os
 app = Flask(__name__)
 
 # ===== DATABASE CONNECTION =====
-MONGO_URI = os.environ.get('MONGO_URI', 'mongodb+srv://nagarajraparthi31_db_user:hLpzl2XFjVR05SJc@cluster0.xl87qb2.mongodb.net/?appName=Cluster0')
+MONGO_URI = os.environ.get('MONGO_URI', 'mongodb+srv://nagarajraparthi31_db_user:EmpireStateOfMind@cluster0.xl87qb2.mongodb.net/?appName=Cluster0')
 
 client = MongoClient(MONGO_URI)
 db = client['casecracker']
