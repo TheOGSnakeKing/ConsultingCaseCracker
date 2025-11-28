@@ -1,27 +1,19 @@
-from flask import Flask, request, jsonify, send_from_directory, send_file
-import json
-import os
+from flask import Flask, request, jsonify, send_file
 import hashlib
 from datetime import datetime
+from pymongo import MongoClient
+import os
 
-app = Flask(__name__, static_folder='static')
+app = Flask(__name__)
 
-DATA_FILE = "quiz_data.json"
+# ===== DATABASE CONNECTION =====
+MONGO_URI = os.environ.get('MONGO_URI', 'mongodb+srv://nagarajraparthi31_db_user:hLpzl2XFjVR05SJc@cluster0.xl87qb2.mongodb.net/?appName=Cluster0')
 
-# ===== DATA FUNCTIONS =====
-def load_data():
-    if os.path.exists(DATA_FILE):
-        try:
-            with open(DATA_FILE, 'r') as f:
-                return json.load(f)
-        except:
-            return {'users': {}}
-    return {'users': {}}
+client = MongoClient(MONGO_URI)
+db = client['casecracker']
+users_collection = db['users']
 
-def save_data(data):
-    with open(DATA_FILE, 'w') as f:
-        json.dump(data, f, indent=2)
-
+# ===== HELPER FUNCTIONS =====
 def hash_password(password):
     """Simple password hashing"""
     return hashlib.sha256(password.encode()).hexdigest()
@@ -49,12 +41,10 @@ def calculate_user_stats(user_data):
 
 # ===== ROUTES =====
 
-# Serve the main app
 @app.route('/')
 def index():
     return send_file('consulting-math-quiz.html')
 
-# Serve static files (if any)
 @app.route('/<path:filename>')
 def serve_static(filename):
     if os.path.exists(filename):
@@ -78,19 +68,18 @@ def register():
     if len(password) < 4:
         return jsonify({'error': 'Password must be at least 4 characters'}), 400
     
-    db = load_data()
-    
-    if username in db['users']:
+    # Check if user exists
+    if users_collection.find_one({'username': username}):
         return jsonify({'error': 'Username already exists'}), 400
     
     # Create new user
-    db['users'][username] = {
+    users_collection.insert_one({
+        'username': username,
         'passwordHash': hash_password(password),
         'createdAt': datetime.now().isoformat(),
         'lastActive': datetime.now().isoformat(),
         'sessions': []
-    }
-    save_data(db)
+    })
     
     return jsonify({'success': True, 'username': username})
 
@@ -100,17 +89,19 @@ def login():
     username = data.get('username', '').strip().lower()
     password = data.get('password', '')
     
-    db = load_data()
+    user = users_collection.find_one({'username': username})
     
-    if username not in db['users']:
+    if not user:
         return jsonify({'error': 'Invalid username or password'}), 401
     
-    if db['users'][username]['passwordHash'] != hash_password(password):
+    if user['passwordHash'] != hash_password(password):
         return jsonify({'error': 'Invalid username or password'}), 401
     
     # Update last active
-    db['users'][username]['lastActive'] = datetime.now().isoformat()
-    save_data(db)
+    users_collection.update_one(
+        {'username': username},
+        {'$set': {'lastActive': datetime.now().isoformat()}}
+    )
     
     return jsonify({'success': True, 'username': username})
 
@@ -120,27 +111,26 @@ def get_history():
     if not username:
         return jsonify({'error': 'Not authenticated'}), 401
     
-    db = load_data()
-    user_data = db['users'].get(username, {})
-    sessions = user_data.get('sessions', [])
+    user = users_collection.find_one({'username': username})
+    if not user:
+        return jsonify({'sessions': []})
     
-    return jsonify({'sessions': sessions})
+    return jsonify({'sessions': user.get('sessions', [])})
 
 @app.route('/api/friends', methods=['GET'])
 def get_friends():
-    db = load_data()
     friends = []
     
-    for username, user_data in db['users'].items():
-        stats = calculate_user_stats(user_data)
+    for user in users_collection.find():
+        stats = calculate_user_stats(user)
         friends.append({
-            'username': username,
-            'totalSessions': len(user_data.get('sessions', [])),
+            'username': user['username'],
+            'totalSessions': len(user.get('sessions', [])),
             'totalQuestions': stats['totalQuestions'],
             'totalCorrect': stats['totalCorrect'],
             'accuracy': stats['accuracy'],
             'bestStreak': stats['bestStreak'],
-            'lastActive': user_data.get('lastActive', 'Never')
+            'lastActive': user.get('lastActive', 'Never')
         })
     
     # Sort by most recently active
@@ -158,9 +148,8 @@ def save_session():
     if not username:
         return jsonify({'error': 'Not authenticated'}), 401
     
-    db = load_data()
-    
-    if username not in db['users']:
+    user = users_collection.find_one({'username': username})
+    if not user:
         return jsonify({'error': 'User not found'}), 401
     
     session_data = request.get_json() or {}
@@ -169,9 +158,14 @@ def save_session():
     if 'timestamp' not in session_data:
         session_data['timestamp'] = datetime.now().isoformat()
     
-    db['users'][username]['sessions'].append(session_data)
-    db['users'][username]['lastActive'] = datetime.now().isoformat()
-    save_data(db)
+    # Append session and update last active
+    users_collection.update_one(
+        {'username': username},
+        {
+            '$push': {'sessions': session_data},
+            '$set': {'lastActive': datetime.now().isoformat()}
+        }
+    )
     
     return jsonify({'success': True})
 
