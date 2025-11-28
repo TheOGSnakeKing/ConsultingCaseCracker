@@ -1,0 +1,2164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Cracker | Consulting Math Trainer</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a0f1a;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-card-hover: #232d42;
+            --accent-gold: #f4c542;
+            --accent-gold-dim: #c9a235;
+            --accent-teal: #2dd4bf;
+            --accent-coral: #fb7185;
+            --accent-purple: #a78bfa;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-subtle: rgba(255,255,255,0.08);
+            --success: #22c55e;
+            --error: #ef4444;
+            --warning: #f59e0b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'IBM Plex Sans', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(244, 197, 66, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(45, 212, 191, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(167, 139, 250, 0.04) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            padding: 30px 20px 20px;
+            margin-bottom: 15px;
+        }
+
+        .logo {
+            font-family: 'DM Serif Display', serif;
+            font-size: 2.2rem;
+            color: var(--accent-gold);
+            letter-spacing: -1px;
+            margin-bottom: 6px;
+            text-shadow: 0 0 40px rgba(244, 197, 66, 0.3);
+        }
+
+        .tagline {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .header-actions {
+            margin-top: 15px;
+        }
+
+        .history-btn {
+            padding: 10px 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 25px;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .history-btn:hover {
+            border-color: var(--accent-teal);
+            color: var(--accent-teal);
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            padding: 16px 20px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            margin-bottom: 25px;
+            border: 1px solid var(--border-subtle);
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        .stat-value.correct { color: var(--success); }
+        .stat-value.incorrect { color: var(--error); }
+        .stat-value.streak { color: var(--accent-purple); }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 4px;
+        }
+
+        /* Flashcard Container */
+        .flashcard-container {
+            perspective: 1000px;
+            margin-bottom: 25px;
+        }
+
+        .flashcard {
+            position: relative;
+            width: 100%;
+            min-height: 320px;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            min-height: 320px;
+            backface-visibility: hidden;
+            border-radius: 24px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .flashcard-front {
+            background: var(--bg-card);
+        }
+
+        .flashcard-back {
+            background: linear-gradient(145deg, #1e293b, #1a2234);
+            transform: rotateY(180deg);
+        }
+
+        .question-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .question-type {
+            font-size: 0.7rem;
+            color: var(--accent-teal);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+        }
+
+        .difficulty-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .difficulty-badge.easy { background: rgba(34, 197, 94, 0.2); color: var(--success); }
+        .difficulty-badge.medium { background: rgba(245, 158, 11, 0.2); color: var(--warning); }
+        .difficulty-badge.hard { background: rgba(251, 113, 133, 0.2); color: var(--accent-coral); }
+
+        .repeat-badge {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            background: rgba(167, 139, 250, 0.2);
+            color: var(--accent-purple);
+            margin-left: 8px;
+        }
+
+        .question-text {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.8rem;
+            line-height: 1.4;
+            color: var(--text-primary);
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .tap-hint {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-top: auto;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .tap-hint span {
+            display: inline-block;
+            animation: pulse-hint 2s infinite;
+        }
+
+        @keyframes pulse-hint {
+            0%, 100% { opacity: 0.6; }
+            50% { opacity: 1; }
+        }
+
+        .hint-section {
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .hint-btn {
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            color: var(--text-secondary);
+            font-family: inherit;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .hint-btn:hover {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        .hint-btn.shown {
+            display: none;
+        }
+
+        .hint-text {
+            display: none;
+            padding: 12px 16px;
+            background: rgba(244, 197, 66, 0.1);
+            border-radius: 12px;
+            color: var(--accent-gold);
+            font-size: 0.9rem;
+            margin-top: 10px;
+        }
+
+        .hint-text.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Answer side */
+        .answer-label {
+            font-size: 0.75rem;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .answer-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            text-align: center;
+            margin-bottom: 15px;
+            text-shadow: 0 0 30px rgba(244, 197, 66, 0.3);
+        }
+
+        .answer-explanation {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            text-align: center;
+            line-height: 1.6;
+            padding: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            margin-top: auto;
+        }
+
+        /* Rating Buttons */
+        .rating-section {
+            display: none;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .rating-section.show {
+            display: flex;
+        }
+
+        .rating-prompt {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .rating-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+
+        .rating-btn {
+            flex: 1;
+            max-width: 160px;
+            padding: 20px 30px;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 1.1rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rating-btn.wrong {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--error);
+            border: 2px solid var(--error);
+        }
+
+        .rating-btn.wrong:hover {
+            background: var(--error);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+        }
+
+        .rating-btn.correct {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--success);
+            border: 2px solid var(--success);
+        }
+
+        .rating-btn.correct:hover {
+            background: var(--success);
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(34, 197, 94, 0.3);
+        }
+
+        .rating-btn-icon {
+            font-size: 2rem;
+        }
+
+        /* Swipe hint */
+        .swipe-hint {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 10px;
+        }
+
+        /* Shortcut Reference */
+        .shortcuts-section {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border-subtle);
+        }
+
+        .shortcuts-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            color: var(--accent-teal);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .shortcuts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 12px;
+            display: none;
+        }
+
+        .shortcuts-grid.show { display: grid; }
+
+        .shortcut-card {
+            background: var(--bg-secondary);
+            padding: 14px 16px;
+            border-radius: 12px;
+            border-left: 3px solid var(--accent-gold);
+        }
+
+        .shortcut-formula {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.95rem;
+            color: var(--accent-gold);
+            margin-bottom: 4px;
+        }
+
+        .shortcut-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+
+
+        /* Mobile Responsive */
+        @media (max-width: 600px) {
+            .container { padding: 15px; }
+            header { padding: 20px 15px 15px; }
+            .logo { font-size: 1.8rem; }
+            .stats-bar { gap: 15px; padding: 12px 15px; }
+            .stat-value { font-size: 1.3rem; }
+            .flashcard-face { padding: 25px 20px; min-height: 280px; }
+            .question-text { font-size: 1.5rem; }
+            .answer-value { font-size: 2.5rem; }
+            .rating-btn { padding: 16px 20px; }
+            .timer { top: 10px; right: 10px; padding: 8px 12px; font-size: 1rem; }
+        }
+
+        /* History Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            max-width: 800px;
+            width: 100%;
+            max-height: 80vh;
+            overflow: hidden;
+            border: 1px solid var(--border-subtle);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .modal-header {
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.5rem;
+            color: var(--accent-teal);
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 5px;
+            line-height: 1;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 20px 25px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .no-history {
+            text-align: center;
+            color: var(--text-muted);
+            padding: 40px 20px;
+        }
+
+        .session-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-subtle);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .session-card:hover {
+            border-color: var(--accent-gold);
+        }
+
+        .session-card.expanded {
+            border-color: var(--accent-gold);
+        }
+
+        .session-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .session-date {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .session-accuracy {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .session-accuracy.good { color: var(--success); }
+        .session-accuracy.medium { color: var(--warning); }
+        .session-accuracy.poor { color: var(--error); }
+
+        .session-stats {
+            display: flex;
+            gap: 20px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .session-stat {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .session-details {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .session-card.expanded .session-details {
+            display: block;
+        }
+
+        .question-log {
+            margin-bottom: 10px;
+            padding: 12px;
+            background: var(--bg-secondary);
+            border-radius: 10px;
+            font-size: 0.85rem;
+        }
+
+        .question-log.correct {
+            border-left: 3px solid var(--success);
+        }
+
+        .question-log.wrong {
+            border-left: 3px solid var(--error);
+        }
+
+        .question-log-q {
+            color: var(--text-primary);
+            margin-bottom: 5px;
+        }
+
+        .question-log-a {
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .question-log-result {
+            float: right;
+            font-weight: 600;
+        }
+
+        .question-log-result.correct { color: var(--success); }
+        .question-log-result.wrong { color: var(--error); }
+
+        .expand-hint {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin-top: 8px;
+        }
+
+        .session-card.expanded .expand-hint {
+            display: none;
+        }
+
+        /* Auth Screen */
+        .auth-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--bg-primary);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .auth-screen.hidden {
+            display: none;
+        }
+
+        .auth-container {
+            background: var(--bg-card);
+            border-radius: 24px;
+            padding: 40px;
+            max-width: 400px;
+            width: 100%;
+            border: 1px solid var(--border-subtle);
+            text-align: center;
+        }
+
+        .auth-logo {
+            font-family: 'DM Serif Display', serif;
+            font-size: 2rem;
+            color: var(--accent-gold);
+            margin-bottom: 8px;
+        }
+
+        .auth-tagline {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            margin-bottom: 30px;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 25px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 4px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: none;
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .auth-tab.active {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .auth-input {
+            padding: 14px 18px;
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .auth-input:focus {
+            border-color: var(--accent-gold);
+        }
+
+        .auth-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .auth-btn {
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            font-family: inherit;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(244, 197, 66, 0.3);
+        }
+
+        .auth-error {
+            color: var(--error);
+            font-size: 0.85rem;
+            margin-top: 10px;
+            min-height: 20px;
+        }
+
+        /* User Header */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .logout-btn {
+            margin-left: auto;
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--border-subtle);
+            border-radius: 20px;
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        /* Friends Feed */
+        .friends-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .friends-title {
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.2rem;
+            color: var(--accent-purple);
+            margin-bottom: 15px;
+        }
+
+        .friend-card {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-subtle);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .friend-card.current-user {
+            border-color: var(--accent-gold);
+            background: rgba(244, 197, 66, 0.05);
+        }
+
+        .friend-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--accent-teal);
+            color: var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .friend-card.current-user .friend-avatar {
+            background: var(--accent-gold);
+        }
+
+        .friend-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .friend-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .friend-stats {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .friend-accuracy {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .friend-accuracy.good { color: var(--success); }
+        .friend-accuracy.medium { color: var(--warning); }
+        .friend-accuracy.poor { color: var(--error); }
+
+        .friend-last-active {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .modal-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .modal-tab {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--border-subtle);
+            background: transparent;
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-tab.active {
+            border-color: var(--accent-teal);
+            color: var(--accent-teal);
+            background: rgba(45, 212, 191, 0.1);
+        }
+
+        .modal-tab:hover:not(.active) {
+            border-color: var(--text-muted);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Swipe animations */
+        .flashcard-container.swipe-left .flashcard {
+            animation: swipeLeft 0.4s ease forwards;
+        }
+
+        .flashcard-container.swipe-right .flashcard {
+            animation: swipeRight 0.4s ease forwards;
+        }
+
+        @keyframes swipeLeft {
+            0% { transform: rotateY(180deg) translateX(0); opacity: 1; }
+            100% { transform: rotateY(180deg) translateX(-150%); opacity: 0; }
+        }
+
+        @keyframes swipeRight {
+            0% { transform: rotateY(180deg) translateX(0); opacity: 1; }
+            100% { transform: rotateY(180deg) translateX(150%); opacity: 0; }
+        }
+
+        .flashcard-container.enter .flashcard {
+            animation: cardEnter 0.4s ease forwards;
+        }
+
+        @keyframes cardEnter {
+            0% { transform: translateY(50px) scale(0.9); opacity: 0; }
+            100% { transform: translateY(0) scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Auth Screen -->
+    <div class="auth-screen" id="authScreen">
+        <div class="auth-container">
+            <h1 class="auth-logo">Case Cracker</h1>
+            <p class="auth-tagline">Mental Math for Consulting</p>
+            
+            <div class="auth-tabs">
+                <button class="auth-tab active" id="loginTab">Login</button>
+                <button class="auth-tab" id="registerTab">Register</button>
+            </div>
+            
+            <form class="auth-form" id="authForm">
+                <input type="text" class="auth-input" id="authUsername" placeholder="Username" autocomplete="username" required>
+                <input type="password" class="auth-input" id="authPassword" placeholder="Password" autocomplete="current-password" required>
+                <button type="submit" class="auth-btn" id="authSubmitBtn">Login</button>
+            </form>
+            <div class="auth-error" id="authError"></div>
+        </div>
+    </div>
+
+    <div class="bg-pattern"></div>
+    
+
+
+    <div class="container">
+        <header>
+            <h1 class="logo">Case Cracker</h1>
+            <p class="tagline">Mental Math for Consulting</p>
+            <div class="user-info" id="userInfo">
+                <div class="user-avatar" id="userAvatar">A</div>
+                <span class="user-name" id="userName">User</span>
+                <button class="logout-btn" id="logoutBtn">Logout</button>
+            </div>
+            <div class="header-actions">
+                <button class="history-btn" id="historyBtn">📊 Stats & Friends</button>
+            </div>
+        </header>
+
+        <div class="stats-bar">
+            <div class="stat">
+                <div class="stat-value" id="totalQuestions">0</div>
+                <div class="stat-label">Questions</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value correct" id="correctCount">0</div>
+                <div class="stat-label">Correct</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value incorrect" id="incorrectCount">0</div>
+                <div class="stat-label">Incorrect</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value streak" id="streakCount">0</div>
+                <div class="stat-label">Streak 🔥</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="accuracy">0%</div>
+                <div class="stat-label">Accuracy</div>
+            </div>
+        </div>
+
+        <!-- Flashcard -->
+        <div class="flashcard-container" id="flashcardContainer">
+            <div class="flashcard" id="flashcard">
+                <!-- Front - Question -->
+                <div class="flashcard-face flashcard-front">
+                    <div class="question-meta">
+                        <span class="question-type" id="questionType">Fraction Conversion</span>
+                        <div>
+                            <span class="difficulty-badge medium" id="difficultyBadge">Medium</span>
+                            <span class="repeat-badge" id="repeatBadge" style="display: none;">🔄 Review</span>
+                        </div>
+                    </div>
+                    <div class="question-text" id="questionText">What is 1/6 as a percentage?</div>
+                    <div class="tap-hint">
+                        <span>👆 Tap card to reveal answer</span>
+                    </div>
+                    <div class="hint-section">
+                        <button class="hint-btn" id="hintBtn">💡 Show Hint</button>
+                        <div class="hint-text" id="hintText"></div>
+                    </div>
+                </div>
+                
+                <!-- Back - Answer -->
+                <div class="flashcard-face flashcard-back">
+                    <div class="answer-label">Answer</div>
+                    <div class="answer-value" id="answerValue">16.67%</div>
+                    <div class="answer-explanation" id="answerExplanation">
+                        1/6 = 0.1666... ≈ 16.67%
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rating Buttons -->
+        <div class="rating-section" id="ratingSection">
+            <div class="rating-prompt">Did you get it right?</div>
+            <div class="rating-buttons">
+                <button class="rating-btn wrong" id="wrongBtn">
+                    <span class="rating-btn-icon">✗</span>
+                    <span>Wrong</span>
+                </button>
+                <button class="rating-btn correct" id="correctBtn">
+                    <span class="rating-btn-icon">✓</span>
+                    <span>Correct</span>
+                </button>
+            </div>
+            <div class="swipe-hint">or swipe ← wrong | correct →</div>
+        </div>
+
+        <div class="shortcuts-section">
+            <div class="shortcuts-title" id="shortcutsToggle">
+                📚 Quick Reference Shortcuts <span style="font-size: 0.8rem; color: var(--text-muted);">(tap to expand)</span>
+            </div>
+            <div class="shortcuts-grid" id="shortcutsGrid">
+                <div class="shortcut-card">
+                    <div class="shortcut-formula">1/3 ≈ 33.33%</div>
+                    <div class="shortcut-desc">One-third as percentage</div>
+                </div>
+                <div class="shortcut-card">
+                    <div class="shortcut-formula">1/6 ≈ 16.67%</div>
+                    <div class="shortcut-desc">One-sixth (half of 1/3)</div>
+                </div>
+                <div class="shortcut-card">
+                    <div class="shortcut-formula">1/7 ≈ 14.29%</div>
+                    <div class="shortcut-desc">One-seventh</div>
+                </div>
+                <div class="shortcut-card">
+                    <div class="shortcut-formula">1/8 = 12.5%</div>
+                    <div class="shortcut-desc">One-eighth (half of 1/4)</div>
+                </div>
+                <div class="shortcut-card">
+                    <div class="shortcut-formula">1/9 ≈ 11.11%</div>
+                    <div class="shortcut-desc">One-ninth</div>
+                </div>
+                <div class="shortcut-card">
+                    <div class="shortcut-formula">1/11 ≈ 9.09%</div>
+                    <div class="shortcut-desc">One-eleventh</div>
+                </div>
+                <div class="shortcut-card">
+                    <div class="shortcut-formula">1/12 ≈ 8.33%</div>
+                    <div class="shortcut-desc">One-twelfth</div>
+                </div>
+                <div class="shortcut-card">
+                    <div class="shortcut-formula">× 25 = ÷4 × 100</div>
+                    <div class="shortcut-desc">Multiply by 25 shortcut</div>
+                </div>
+                <div class="shortcut-card">
+                    <div class="shortcut-formula">× 75 = ×3 ÷4 × 100</div>
+                    <div class="shortcut-desc">Multiply by 75 shortcut</div>
+                </div>
+                <div class="shortcut-card">
+                    <div class="shortcut-formula">× 125 = ÷8 × 1000</div>
+                    <div class="shortcut-desc">Multiply by 125 shortcut</div>
+                </div>
+                <div class="shortcut-card">
+                    <div class="shortcut-formula">Margin = Profit/Revenue</div>
+                    <div class="shortcut-desc">Profit margin formula</div>
+                </div>
+                <div class="shortcut-card">
+                    <div class="shortcut-formula">Markup = Profit/Cost</div>
+                    <div class="shortcut-desc">Markup vs margin distinction</div>
+                </div>
+                <div class="shortcut-card">
+                    <div class="shortcut-formula">CAGR ≈ (End/Start)^(1/n) - 1</div>
+                    <div class="shortcut-desc">Compound annual growth rate</div>
+                </div>
+                <div class="shortcut-card">
+                    <div class="shortcut-formula">Rule of 72: Years = 72/rate</div>
+                    <div class="shortcut-desc">Time to double investment</div>
+                </div>
+                <div class="shortcut-card">
+                    <div class="shortcut-formula">% Change = (New-Old)/Old × 100</div>
+                    <div class="shortcut-desc">Percentage change formula</div>
+                </div>
+                <div class="shortcut-card">
+                    <div class="shortcut-formula">50% of X = X ÷ 2</div>
+                    <div class="shortcut-desc">Halving shortcut</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div class="modal-overlay" id="historyModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">📊 Stats & Friends</h2>
+                <button class="modal-close" id="modalClose">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-tabs">
+                    <button class="modal-tab active" id="tabMyHistory">📈 My History</button>
+                    <button class="modal-tab" id="tabFriends">👥 Friends</button>
+                </div>
+                <div class="tab-content active" id="historyContent">
+                    <div class="no-history">Loading history...</div>
+                </div>
+                <div class="tab-content" id="friendsContent">
+                    <div class="no-history">Loading friends...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== QUESTION BANK =====
+        const questionBank = {
+            fractions: {
+                easy: [
+                    { q: "What is 1/2 as a percentage?", a: "50%", hint: "Divide 100 by 2", explanation: "1/2 = 0.5 = 50%" },
+                    { q: "What is 1/4 as a percentage?", a: "25%", hint: "Divide 100 by 4", explanation: "1/4 = 0.25 = 25%" },
+                    { q: "What is 3/4 as a percentage?", a: "75%", hint: "1/4 = 25%, so 3/4 = ?", explanation: "3/4 = 3 × 25% = 75%" },
+                    { q: "What is 1/5 as a percentage?", a: "20%", hint: "Divide 100 by 5", explanation: "1/5 = 0.2 = 20%" },
+                    { q: "What is 2/5 as a percentage?", a: "40%", hint: "1/5 = 20%, so 2/5 = ?", explanation: "2/5 = 2 × 20% = 40%" },
+                    { q: "What is 1/10 as a percentage?", a: "10%", hint: "Divide 100 by 10", explanation: "1/10 = 0.1 = 10%" },
+                    { q: "What is 3/10 as a percentage?", a: "30%", hint: "1/10 = 10%, so 3/10 = ?", explanation: "3/10 = 3 × 10% = 30%" },
+                    { q: "What is 1/20 as a percentage?", a: "5%", hint: "Divide 100 by 20", explanation: "1/20 = 0.05 = 5%" },
+                ],
+                medium: [
+                    { q: "What is 1/3 as a percentage?", a: "33.33%", hint: "Repeating decimal: 33.333...", explanation: "1/3 = 0.333... ≈ 33.33%" },
+                    { q: "What is 2/3 as a percentage?", a: "66.67%", hint: "Double of 1/3", explanation: "2/3 = 0.666... ≈ 66.67%" },
+                    { q: "What is 1/6 as a percentage?", a: "16.67%", hint: "Half of 1/3", explanation: "1/6 = 0.1666... ≈ 16.67%" },
+                    { q: "What is 5/6 as a percentage?", a: "83.33%", hint: "100% - 1/6", explanation: "5/6 = 1 - 1/6 ≈ 83.33%" },
+                    { q: "What is 1/8 as a percentage?", a: "12.5%", hint: "Half of 1/4 (25%)", explanation: "1/8 = 0.125 = 12.5%" },
+                    { q: "What is 3/8 as a percentage?", a: "37.5%", hint: "3 × 12.5%", explanation: "3/8 = 3 × 12.5% = 37.5%" },
+                    { q: "What is 5/8 as a percentage?", a: "62.5%", hint: "5 × 12.5%", explanation: "5/8 = 5 × 12.5% = 62.5%" },
+                    { q: "What is 7/8 as a percentage?", a: "87.5%", hint: "100% - 12.5%", explanation: "7/8 = 7 × 12.5% = 87.5%" },
+                    { q: "What is 1/9 as a percentage?", a: "11.11%", hint: "Repeating 11", explanation: "1/9 = 0.111... ≈ 11.11%" },
+                    { q: "What is 4/9 as a percentage?", a: "44.44%", hint: "4 × 11.11%", explanation: "4/9 = 0.444... ≈ 44.44%" },
+                ],
+                hard: [
+                    { q: "What is 1/7 as a percentage?", a: "14.29%", hint: "Approximately 14.3%", explanation: "1/7 = 0.142857... ≈ 14.29%" },
+                    { q: "What is 3/7 as a percentage?", a: "42.86%", hint: "3 × 14.29%", explanation: "3/7 ≈ 42.86%" },
+                    { q: "What is 5/7 as a percentage?", a: "71.43%", hint: "5 × 14.29%", explanation: "5/7 ≈ 71.43%" },
+                    { q: "What is 1/11 as a percentage?", a: "9.09%", hint: "Approximately 9.1%", explanation: "1/11 = 0.0909... ≈ 9.09%" },
+                    { q: "What is 5/11 as a percentage?", a: "45.45%", hint: "5 × 9.09%", explanation: "5/11 ≈ 45.45%" },
+                    { q: "What is 1/12 as a percentage?", a: "8.33%", hint: "Half of 1/6", explanation: "1/12 = 0.0833... ≈ 8.33%" },
+                    { q: "What is 5/12 as a percentage?", a: "41.67%", hint: "5 × 8.33%", explanation: "5/12 ≈ 41.67%" },
+                    { q: "What is 7/12 as a percentage?", a: "58.33%", hint: "7 × 8.33%", explanation: "7/12 ≈ 58.33%" },
+                    { q: "What is 2/13 as a percentage?", a: "15.38%", hint: "2 × (100/13)", explanation: "2/13 ≈ 15.38%" },
+                    { q: "What is 3/14 as a percentage?", a: "21.43%", hint: "3 × (1/14)", explanation: "3/14 ≈ 21.43%" },
+                    { q: "What is 5/16 as a percentage?", a: "31.25%", hint: "5 × 6.25%", explanation: "5/16 = 31.25%" },
+                    { q: "What is 11/16 as a percentage?", a: "68.75%", hint: "11 × 6.25%", explanation: "11/16 = 68.75%" },
+                ]
+            },
+            percentages: {
+                easy: [
+                    { q: "What is 10% of 250?", a: "25", hint: "Move decimal one place left", explanation: "10% = ÷10, so 250 ÷ 10 = 25" },
+                    { q: "What is 50% of 84?", a: "42", hint: "Half of the number", explanation: "50% = ÷2, so 84 ÷ 2 = 42" },
+                    { q: "What is 25% of 120?", a: "30", hint: "Divide by 4", explanation: "25% = ÷4, so 120 ÷ 4 = 30" },
+                    { q: "What is 20% of 75?", a: "15", hint: "Divide by 5", explanation: "20% = ÷5, so 75 ÷ 5 = 15" },
+                    { q: "What is 5% of 400?", a: "20", hint: "10% = 40, then halve", explanation: "5% = half of 10%, so 40 ÷ 2 = 20" },
+                    { q: "What is 1% of 3,500?", a: "35", hint: "Move decimal two places left", explanation: "1% = ÷100, so 3500 ÷ 100 = 35" },
+                ],
+                medium: [
+                    { q: "What is 15% of 240?", a: "36", hint: "10% + 5%", explanation: "10% = 24, 5% = 12, total = 36" },
+                    { q: "What is 35% of 180?", a: "63", hint: "30% + 5% or 25% + 10%", explanation: "30% = 54, 5% = 9, total = 63" },
+                    { q: "What is 12.5% of 320?", a: "40", hint: "12.5% = 1/8", explanation: "1/8 of 320 = 320 ÷ 8 = 40" },
+                    { q: "What is 33% of 600?", a: "198", hint: "Approximately 1/3", explanation: "33% ≈ 1/3, so 600 × 0.33 = 198" },
+                    { q: "What is 17.5% of 200?", a: "35", hint: "15% + 2.5%", explanation: "15% = 30, 2.5% = 5, total = 35" },
+                    { q: "What is 45% of 220?", a: "99", hint: "50% - 5%", explanation: "50% = 110, 5% = 11, total = 99" },
+                    { q: "What is 8% of 1,250?", a: "100", hint: "10% - 2%", explanation: "10% = 125, 2% = 25, total = 100" },
+                    { q: "What is 22% of 450?", a: "99", hint: "20% + 2%", explanation: "20% = 90, 2% = 9, total = 99" },
+                    { q: "What is 6% of 850?", a: "51", hint: "5% + 1%", explanation: "5% = 42.5, 1% = 8.5, total = 51" },
+                ],
+                hard: [
+                    { q: "What is 37.5% of 480?", a: "180", hint: "37.5% = 3/8", explanation: "3/8 of 480 = 480 × 3 ÷ 8 = 180" },
+                    { q: "What is 62.5% of 720?", a: "450", hint: "62.5% = 5/8", explanation: "5/8 of 720 = 720 × 5 ÷ 8 = 450" },
+                    { q: "What is 87.5% of 560?", a: "490", hint: "87.5% = 7/8", explanation: "7/8 of 560 = 560 × 7 ÷ 8 = 490" },
+                    { q: "What is 16.67% of 540?", a: "90", hint: "16.67% ≈ 1/6", explanation: "1/6 of 540 = 540 ÷ 6 = 90" },
+                    { q: "What is 14.29% of 350?", a: "50", hint: "14.29% ≈ 1/7", explanation: "1/7 of 350 = 350 ÷ 7 = 50" },
+                    { q: "What is 83.33% of 420?", a: "350", hint: "83.33% ≈ 5/6", explanation: "5/6 of 420 = 350" },
+                    { q: "What is 9.09% of 880?", a: "80", hint: "9.09% ≈ 1/11", explanation: "1/11 of 880 = 80" },
+                    { q: "What is 27.27% of 330?", a: "90", hint: "27.27% ≈ 3/11", explanation: "3/11 of 330 = 90" },
+                    { q: "What is 18.75% of 640?", a: "120", hint: "18.75% = 3/16", explanation: "3/16 of 640 = 120" },
+                    { q: "What is 43.75% of 480?", a: "210", hint: "43.75% = 7/16", explanation: "7/16 of 480 = 210" },
+                ]
+            },
+            multiplication: {
+                easy: [
+                    { q: "25 × 4 = ?", a: "100", hint: "25 × 4 always equals 100", explanation: "25 × 4 = 100 (memorize this!)" },
+                    { q: "25 × 8 = ?", a: "200", hint: "25 × 4 × 2", explanation: "25 × 8 = 100 × 2 = 200" },
+                    { q: "50 × 6 = ?", a: "300", hint: "Half of 100 × 6", explanation: "50 × 6 = 300" },
+                    { q: "75 × 4 = ?", a: "300", hint: "3 × 25 × 4", explanation: "75 × 4 = 3 × 100 = 300" },
+                    { q: "125 × 8 = ?", a: "1,000", hint: "125 × 8 always equals 1000", explanation: "125 × 8 = 1000 (memorize this!)" },
+                    { q: "12 × 12 = ?", a: "144", hint: "Common square", explanation: "12² = 144" },
+                    { q: "15 × 15 = ?", a: "225", hint: "Common square", explanation: "15² = 225" },
+                ],
+                medium: [
+                    { q: "25 × 36 = ?", a: "900", hint: "36 ÷ 4 × 100", explanation: "25 × 36 = 36 ÷ 4 × 100 = 9 × 100 = 900" },
+                    { q: "75 × 12 = ?", a: "900", hint: "75 = 3/4 × 100", explanation: "75 × 12 = 3/4 × 12 × 100 = 9 × 100 = 900" },
+                    { q: "125 × 24 = ?", a: "3,000", hint: "24 ÷ 8 × 1000", explanation: "125 × 24 = 24 ÷ 8 × 1000 = 3 × 1000 = 3000" },
+                    { q: "25 × 48 = ?", a: "1,200", hint: "48 ÷ 4 × 100", explanation: "25 × 48 = 48 ÷ 4 × 100 = 12 × 100 = 1200" },
+                    { q: "75 × 16 = ?", a: "1,200", hint: "75 = 3 × 25", explanation: "75 × 16 = 3 × 25 × 16 = 3 × 400 = 1200" },
+                    { q: "33 × 33 = ?", a: "1,089", hint: "Use (30+3)²", explanation: "33² = 30² + 2×30×3 + 3² = 900 + 180 + 9 = 1089" },
+                    { q: "17 × 17 = ?", a: "289", hint: "Use (20-3)²", explanation: "17² = 20² - 2×20×3 + 3² = 400 - 120 + 9 = 289" },
+                    { q: "45 × 45 = ?", a: "2,025", hint: "Use n×(n+1) trick + 25", explanation: "45² = 4×5 followed by 25 = 2025" },
+                    { q: "65 × 65 = ?", a: "4,225", hint: "Use n×(n+1) trick + 25", explanation: "65² = 6×7 followed by 25 = 4225" },
+                    { q: "11 × 47 = ?", a: "517", hint: "11× trick: sum digits in middle", explanation: "11 × 47 = 4_(4+7)_7 = 517" },
+                    // 15 times table
+                    { q: "15 × 12 = ?", a: "180", hint: "15 × 12 = 15 × 10 + 15 × 2", explanation: "150 + 30 = 180" },
+                    { q: "15 × 14 = ?", a: "210", hint: "15 × 14 = 15 × 10 + 15 × 4", explanation: "150 + 60 = 210" },
+                    { q: "15 × 16 = ?", a: "240", hint: "15 × 16 = 15 × 10 + 15 × 6", explanation: "150 + 90 = 240" },
+                    { q: "15 × 18 = ?", a: "270", hint: "15 × 18 = 15 × 20 - 15 × 2", explanation: "300 - 30 = 270" },
+                    // 25 times table
+                    { q: "25 × 12 = ?", a: "300", hint: "12 ÷ 4 × 100", explanation: "25 × 12 = 3 × 100 = 300" },
+                    { q: "25 × 14 = ?", a: "350", hint: "14 ÷ 4 × 100 = 3.5 × 100", explanation: "25 × 14 = 350" },
+                    { q: "25 × 16 = ?", a: "400", hint: "16 ÷ 4 × 100", explanation: "25 × 16 = 4 × 100 = 400" },
+                    { q: "25 × 18 = ?", a: "450", hint: "18 ÷ 4 × 100", explanation: "25 × 18 = 4.5 × 100 = 450" },
+                    { q: "25 × 22 = ?", a: "550", hint: "22 ÷ 4 × 100", explanation: "25 × 22 = 5.5 × 100 = 550" },
+                    { q: "25 × 24 = ?", a: "600", hint: "24 ÷ 4 × 100", explanation: "25 × 24 = 6 × 100 = 600" },
+                ],
+                hard: [
+                    { q: "125 × 56 = ?", a: "7,000", hint: "56 ÷ 8 × 1000", explanation: "125 × 56 = 56 ÷ 8 × 1000 = 7 × 1000 = 7000" },
+                    { q: "75 × 28 = ?", a: "2,100", hint: "75 × 28 = 3/4 × 28 × 100", explanation: "3/4 × 28 = 21, so 75 × 28 = 2100" },
+                    { q: "25 × 84 = ?", a: "2,100", hint: "84 ÷ 4 × 100", explanation: "25 × 84 = 84 ÷ 4 × 100 = 21 × 100 = 2100" },
+                    { q: "125 × 72 = ?", a: "9,000", hint: "72 ÷ 8 × 1000", explanation: "125 × 72 = 72 ÷ 8 × 1000 = 9 × 1000 = 9000" },
+                    { q: "37 × 27 = ?", a: "999", hint: "Close to 1000", explanation: "37 × 27 = 999 (a famous product!)" },
+                    { q: "143 × 7 = ?", a: "1,001", hint: "143 × 7 is special", explanation: "143 × 7 = 1001" },
+                    { q: "99 × 47 = ?", a: "4,653", hint: "(100-1) × 47", explanation: "99 × 47 = 4700 - 47 = 4653" },
+                    { q: "101 × 34 = ?", a: "3,434", hint: "(100+1) × 34", explanation: "101 × 34 = 3400 + 34 = 3434" },
+                    { q: "95 × 95 = ?", a: "9,025", hint: "Use (100-5)²", explanation: "95² = 100² - 2×100×5 + 5² = 10000 - 1000 + 25 = 9025" },
+                    { q: "85 × 85 = ?", a: "7,225", hint: "Use n×(n+1) trick + 25", explanation: "85² = 8×9 followed by 25 = 7225" },
+                    // More 15 times table (harder)
+                    { q: "15 × 24 = ?", a: "360", hint: "15 × 24 = 15 × 20 + 15 × 4", explanation: "300 + 60 = 360" },
+                    { q: "15 × 32 = ?", a: "480", hint: "15 × 32 = 15 × 30 + 15 × 2", explanation: "450 + 30 = 480" },
+                    { q: "15 × 48 = ?", a: "720", hint: "15 × 48 = 15 × 50 - 15 × 2", explanation: "750 - 30 = 720" },
+                    // More 25 times table (harder)
+                    { q: "25 × 32 = ?", a: "800", hint: "32 ÷ 4 × 100", explanation: "25 × 32 = 8 × 100 = 800" },
+                    { q: "25 × 44 = ?", a: "1,100", hint: "44 ÷ 4 × 100", explanation: "25 × 44 = 11 × 100 = 1100" },
+                    { q: "25 × 56 = ?", a: "1,400", hint: "56 ÷ 4 × 100", explanation: "25 × 56 = 14 × 100 = 1400" },
+                    { q: "25 × 68 = ?", a: "1,700", hint: "68 ÷ 4 × 100", explanation: "25 × 68 = 17 × 100 = 1700" },
+                    { q: "25 × 76 = ?", a: "1,900", hint: "76 ÷ 4 × 100", explanation: "25 × 76 = 19 × 100 = 1900" },
+                    // 75 times table
+                    { q: "75 × 24 = ?", a: "1,800", hint: "75 = 3 × 25, so 3 × 25 × 24", explanation: "3 × 600 = 1800" },
+                    { q: "75 × 32 = ?", a: "2,400", hint: "75 = 3 × 25, so 3 × 25 × 32", explanation: "3 × 800 = 2400" },
+                    { q: "75 × 44 = ?", a: "3,300", hint: "75 = 3 × 25, so 3 × 25 × 44", explanation: "3 × 1100 = 3300" },
+                ]
+            },
+            profit: {
+                easy: [
+                    { q: "Cost $80, sold for $100. What's the profit margin %?", a: "20%", hint: "Margin = Profit/Revenue × 100", explanation: "Profit = $20, Margin = 20/100 × 100 = 20%" },
+                    { q: "Cost $50, sold for $75. What's the markup %?", a: "50%", hint: "Markup = Profit/Cost × 100", explanation: "Profit = $25, Markup = 25/50 × 100 = 50%" },
+                    { q: "Revenue $200, costs $160. What's the profit margin %?", a: "20%", hint: "Margin = (Revenue-Cost)/Revenue × 100", explanation: "(200-160)/200 × 100 = 40/200 × 100 = 20%" },
+                    { q: "Price increased from $80 to $100. % increase?", a: "25%", hint: "(New-Old)/Old × 100", explanation: "(100-80)/80 × 100 = 20/80 × 100 = 25%" },
+                    { q: "Price dropped from $100 to $80. % decrease?", a: "20%", hint: "(Old-New)/Old × 100", explanation: "(100-80)/100 × 100 = 20%" },
+                ],
+                medium: [
+                    { q: "25% profit margin. Cost is $60. What's the selling price?", a: "$80", hint: "If margin = 25%, cost = 75% of price", explanation: "Cost = 75% of Price, so Price = 60/0.75 = $80" },
+                    { q: "33% markup on cost $150. What's the selling price?", a: "$200", hint: "Markup is added to cost", explanation: "Price = 150 × 1.33 ≈ $200" },
+                    { q: "Sell at $120 with 40% margin. What's the cost?", a: "$72", hint: "Cost = Revenue × (1 - margin)", explanation: "Cost = 120 × (1 - 0.40) = 120 × 0.6 = $72" },
+                    { q: "Revenue grew from $400K to $500K. % growth?", a: "25%", hint: "(New-Old)/Old × 100", explanation: "(500-400)/400 × 100 = 25%" },
+                    { q: "20% profit margin, $15 profit per unit. What's the revenue per unit?", a: "$75", hint: "Profit = Margin × Revenue", explanation: "15 = 0.20 × Revenue, Revenue = $75" },
+                    { q: "If 50% markup results in $30 profit, what was the cost?", a: "$60", hint: "Profit = Markup × Cost", explanation: "30 = 0.50 × Cost, Cost = $60" },
+                    { q: "Break-even at 1000 units. Fixed costs $50,000. Contribution margin per unit?", a: "$50", hint: "Fixed costs / Break-even units", explanation: "$50,000 / 1000 = $50 per unit" },
+                    // New break-even and business formulas
+                    { q: "Fixed costs $200K, CM per unit $40. Break-even units?", a: "5,000", hint: "Break-even = Fixed Costs / CM", explanation: "$200,000 / $40 = 5,000 units" },
+                    { q: "Investment $1M, discount rate 10%. What's the perpetuity NPV?", a: "$10M", hint: "NPV = Investment / Discount Rate", explanation: "$1M / 0.10 = $10M" },
+                    { q: "Factory max capacity 10,000 units. Actual output 7,500. Utilization rate?", a: "75%", hint: "Utilization = Actual / Max", explanation: "7,500 / 10,000 = 75%" },
+                    { q: "Revenue $500K, COGS $200K. What's the gross margin?", a: "60%", hint: "GM = (Rev - COGS) / Rev", explanation: "($500K - $200K) / $500K = 60%" },
+                    { q: "Capital investment 8%, growth rate 3%. What's the discount rate?", a: "5%", hint: "Discount = Capital Investment - Growth", explanation: "8% - 3% = 5%" },
+                ],
+                hard: [
+                    { q: "CAGR: $100 to $200 over 4 years. Approx annual growth rate %?", a: "~19%", hint: "Use Rule of 72: 72/years = rate to double", explanation: "72/4 = 18%, actual is ~19%" },
+                    { q: "20% margin on 30% of sales, 10% margin on 70%. Blended margin %?", a: "13%", hint: "Weighted average", explanation: "0.30×20 + 0.70×10 = 6 + 7 = 13%" },
+                    { q: "Price elasticity: 10% price drop, 25% volume increase. New revenue vs old (as %)?", a: "112.5%", hint: "New Rev = 0.9 × 1.25 × Old Rev", explanation: "0.9 × 1.25 = 1.125 = 112.5% of original" },
+                    { q: "Gross margin 60%, operating expenses 40% of revenue. Operating margin %?", a: "20%", hint: "Operating margin = Gross margin - OpEx%", explanation: "60% - 40% = 20%" },
+                    { q: "Revenue $1M, COGS 55%, SG&A 25%. EBIT margin %?", a: "20%", hint: "EBIT = Revenue - COGS - SG&A", explanation: "100% - 55% - 25% = 20%" },
+                    { q: "Buy at $40, 25% discount. Sell at $50. Margin on selling price %?", a: "40%", hint: "Buy price = $30 after discount", explanation: "Buy at $30, sell at $50, margin = 20/50 = 40%" },
+                    { q: "2x revenue in 5 years. What's the approximate annual growth rate %?", a: "~15%", hint: "Rule of 72 backwards, or ~15% compound", explanation: "1.15^5 ≈ 2.01, so ~15% per year" },
+                    { q: "40% gross margin, 15% EBITDA margin. SG&A as % of revenue?", a: "25%", hint: "Gross margin - SG&A = EBITDA margin", explanation: "40% - 15% = 25% SG&A" },
+                    // More business formulas
+                    { q: "Investment $5M, annual cash flow $500K forever. IRR?", a: "10%", hint: "IRR = Cash Flow / Investment for perpetuity", explanation: "$500K / $5M = 10%" },
+                    { q: "Fixed costs $300K, price $50, variable cost $30. Break-even units?", a: "15,000", hint: "BE = FC / (Price - VC)", explanation: "$300K / ($50-$30) = $300K / $20 = 15,000" },
+                    { q: "LTV $150, CAC $50. LTV:CAC ratio?", a: "3:1", hint: "Simply divide LTV by CAC", explanation: "$150 / $50 = 3:1 (healthy ratio)" },
+                    { q: "Max capacity 8,000 hrs/year. Running 6,400 hrs. Utilization?", a: "80%", hint: "Actual / Max capacity", explanation: "6,400 / 8,000 = 80%" },
+                    { q: "EBITDA $2M, Profit $1.2M. Why use EBITDA for valuation?", a: "More conservative", hint: "EBITDA excludes non-cash expenses", explanation: "EBITDA is higher, making valuation more conservative" },
+                ]
+            },
+            estimation: {
+                easy: [
+                    { q: "Estimate: 198 × 5 ≈ ?", a: "~1,000", hint: "Round 198 to 200", explanation: "200 × 5 = 1000 (actual: 990)" },
+                    { q: "Estimate: 49 × 21 ≈ ?", a: "~1,000", hint: "Round to 50 × 20", explanation: "50 × 20 = 1000 (actual: 1029)" },
+                    { q: "Estimate: 33% of 901 ≈ ?", a: "~300", hint: "1/3 of ~900", explanation: "1/3 × 900 = 300 (actual: 297)" },
+                    { q: "Estimate: 4,987 ÷ 50 ≈ ?", a: "~100", hint: "Round to 5000 ÷ 50", explanation: "5000 ÷ 50 = 100 (actual: 99.74)" },
+                    { q: "Estimate: 24% of 398 ≈ ?", a: "~100", hint: "~25% of 400", explanation: "25% × 400 = 100 (actual: 95.5)" },
+                ],
+                medium: [
+                    { q: "Estimate: 17 × 23 ≈ ?", a: "~400", hint: "Average is 20, use 20²", explanation: "20² = 400, or 17×23 = 20² - 3² = 391" },
+                    { q: "Estimate: 78 × 82 ≈ ?", a: "~6,400", hint: "Average is 80, use 80²", explanation: "80² = 6400 (actual: 6396)" },
+                    { q: "Estimate: $347M revenue, 23% margin ≈ profit?", a: "~$80M", hint: "~$350M × 25% or ~$350M × 20%", explanation: "$350M × ~23% ≈ $80M" },
+                    { q: "Estimate: 1/7 of 4,956 ≈ ?", a: "~700", hint: "1/7 ≈ 14%, or 5000÷7", explanation: "5000 ÷ 7 ≈ 714 (actual: 708)" },
+                    { q: "Estimate: 789 × 1.15 ≈ ?", a: "~900", hint: "~800 + 15% of 800", explanation: "800 × 1.15 = 920 (actual: 907)" },
+                    { q: "Estimate: 12.5% of 7,920 ≈ ?", a: "~1,000", hint: "1/8 of ~8000", explanation: "8000 ÷ 8 = 1000 (actual: 990)" },
+                    { q: "Estimate: 67 × 33 ≈ ?", a: "~2,200", hint: "~67 × 33 = 2/3 × 33²", explanation: "70 × 30 = 2100, closer: 2211" },
+                ],
+                hard: [
+                    { q: "Estimate: 847 × 0.375 ≈ ?", a: "~320", hint: "0.375 = 3/8, so 3/8 of ~850", explanation: "850 × 3/8 ≈ 318 (actual: 317.6)" },
+                    { q: "Estimate: $4.7B market, 3.2% share = revenue?", a: "~$150M", hint: "~$5B × 3%", explanation: "$5B × 3% = $150M (actual: $150.4M)" },
+                    { q: "Estimate: 156 people, $73 each ≈ total?", a: "~$11,000", hint: "~150 × 75", explanation: "150 × 75 = 11,250 (actual: 11,388)" },
+                    { q: "Estimate: 2^10 = ?", a: "1,024", hint: "Powers of 2 are crucial", explanation: "2^10 = 1024 (memorize this!)" },
+                    { q: "Estimate: 8.3M users × $47 ARPU ≈ revenue in $M?", a: "~$400M", hint: "~8M × $50", explanation: "8 × 50 = $400M (actual: $390M)" },
+                    { q: "Estimate: √180,000 ≈ ?", a: "~424", hint: "√180000 = √18 × 100", explanation: "√18 ≈ 4.24, so √180000 ≈ 424" },
+                    { q: "Estimate: $890K cost, want 35% margin. Price ≈ ?", a: "~$1,370K", hint: "Cost = 65% of price, Price = Cost/0.65", explanation: "890/0.65 ≈ $1,369K" },
+                    { q: "Estimate: 17% CAGR for 5 years. Growth multiple ≈ ?", a: "~2.2x", hint: "Rule of thumb: 15% ≈ 2x in 5 years", explanation: "1.17^5 ≈ 2.19" },
+                    { q: "Estimate: 3,456 × 0.167 ≈ ?", a: "~580", hint: "0.167 ≈ 1/6", explanation: "3500 ÷ 6 ≈ 583 (actual: 577)" },
+                ]
+            },
+            timeConversions: {
+                medium: [
+                    { q: "Hours in one week?", a: "168", hint: "24 × 7", explanation: "24 hours × 7 days = 168 hours" },
+                    { q: "Hours in one day?", a: "24", hint: "Basic time unit", explanation: "24 hours in a day" },
+                    { q: "Minutes in one day?", a: "1,440", hint: "60 × 24", explanation: "60 min × 24 hrs = 1,440 minutes" },
+                    { q: "Seconds in one hour?", a: "3,600", hint: "60 × 60", explanation: "60 sec × 60 min = 3,600 seconds" },
+                    { q: "Hours in one year (approx)?", a: "~8,760", hint: "24 × 365", explanation: "24 × 365 = 8,760 hours" },
+                    { q: "Working hours in a year? (40hr weeks, 50 weeks)", a: "2,000", hint: "40 × 50", explanation: "40 hrs × 50 weeks = 2,000 hours" },
+                    { q: "Days in a quarter?", a: "~90", hint: "365 ÷ 4", explanation: "~91 days (3 months ≈ 90 days)" },
+                    { q: "Weeks in a year?", a: "52", hint: "365 ÷ 7", explanation: "365 / 7 ≈ 52 weeks" },
+                    { q: "Minutes in one week?", a: "10,080", hint: "60 × 24 × 7", explanation: "1,440 × 7 = 10,080 minutes" },
+                    { q: "Seconds in one day?", a: "86,400", hint: "3,600 × 24", explanation: "3,600 × 24 = 86,400 seconds" },
+                ],
+                hard: [
+                    { q: "A factory runs 16 hrs/day, 6 days/week. Weekly operating hours?", a: "96", hint: "16 × 6", explanation: "16 × 6 = 96 hours per week" },
+                    { q: "Call center open 12 hrs/day. Monthly operating hours (30 days)?", a: "360", hint: "12 × 30", explanation: "12 × 30 = 360 hours" },
+                    { q: "Employee works 45 hrs/week. Annual hours (50 weeks)?", a: "2,250", hint: "45 × 50", explanation: "45 × 50 = 2,250 hours" },
+                    { q: "Service runs 24/7. Annual operating hours?", a: "8,760", hint: "24 × 365", explanation: "24 × 365 = 8,760 hours" },
+                    { q: "Production line: 8 hrs/shift, 3 shifts/day, 5 days/week. Weekly hrs?", a: "120", hint: "8 × 3 × 5", explanation: "8 × 3 × 5 = 120 hours" },
+                ]
+            },
+            population: {
+                medium: [
+                    // Standalone population facts
+                    { q: "World population (approx)?", a: "8 billion", hint: "As of 2024", explanation: "World population ≈ 8 billion" },
+                    { q: "US population (approx)?", a: "330 million", hint: "Third most populous country", explanation: "USA ≈ 330 million (often rounded to 320M)" },
+                    { q: "EU population (approx)?", a: "450 million", hint: "27 member states combined", explanation: "EU ≈ 450 million (often use 420M)" },
+                    { q: "India population (approx)?", a: "1.4 billion", hint: "Most populous country", explanation: "India ≈ 1.4 billion" },
+                    { q: "China population (approx)?", a: "1.4 billion", hint: "Second most populous", explanation: "China ≈ 1.4 billion (declining)" },
+                    { q: "Mexico population (approx)?", a: "130 million", hint: "US southern neighbor", explanation: "Mexico ≈ 130 million" },
+                    { q: "Canada population (approx)?", a: "40 million", hint: "US northern neighbor", explanation: "Canada ≈ 40 million" },
+                    { q: "What % of population is working age (18-65)?", a: "~65%", hint: "Roughly 2/3", explanation: "Working age is typically ~65% of population" },
+                    { q: "What % of population is seniors (65+)?", a: "~20%", hint: "In developed countries", explanation: "Seniors 65+ are ~20% in developed nations" },
+                    { q: "US + Canada combined population?", a: "~370 million", hint: "330M + 40M", explanation: "330M + 40M = 370 million" },
+                    { q: "India + China combined population?", a: "~2.8 billion", hint: "1.4B + 1.4B", explanation: "1.4B + 1.4B = 2.8 billion" },
+                ],
+                hard: [
+                    // Case-style population questions
+                    { q: "Client wants to enter US market. Working-age population size?", a: "~210 million", hint: "65% of 330M", explanation: "330M × 65% = 214.5M ≈ 210 million" },
+                    { q: "Targeting US seniors for healthcare product. Market size (people)?", a: "~66 million", hint: "20% of 330M", explanation: "330M × 20% = 66 million seniors" },
+                    { q: "Launching in Mexico. If 5% market penetration, how many customers?", a: "6.5 million", hint: "5% of 130M", explanation: "130M × 5% = 6.5 million" },
+                    { q: "EU launch targeting working-age adults. Total addressable market?", a: "~270 million", hint: "65% of 420M", explanation: "420M × 65% = 273M ≈ 270 million" },
+                    { q: "Canadian seniors market. If avg spend is $500/yr, total market size?", a: "$4 billion", hint: "20% of 40M × $500", explanation: "8M seniors × $500 = $4B" },
+                    { q: "US premium product, 2% of working-age can afford it. Target customers?", a: "~4.2 million", hint: "2% of 210M working-age", explanation: "210M × 2% = 4.2 million" },
+                    { q: "India middle class is 30% of population. How many people?", a: "420 million", hint: "30% of 1.4B", explanation: "1.4B × 30% = 420 million" },
+                    { q: "China urban population is 65%. Urban dwellers?", a: "~910 million", hint: "65% of 1.4B", explanation: "1.4B × 65% = 910 million" },
+                    { q: "Mexico youth (under 25) is 40%. Youth market size?", a: "52 million", hint: "40% of 130M", explanation: "130M × 40% = 52 million" },
+                    { q: "North America total population (US + Canada + Mexico)?", a: "~500 million", hint: "330 + 40 + 130", explanation: "330M + 40M + 130M = 500 million" },
+                    { q: "If 1% of world buys our $10 product, total revenue?", a: "$800 million", hint: "1% of 8B × $10", explanation: "80M people × $10 = $800M" },
+                    { q: "US households (avg 2.5 people/household). Number of households?", a: "~130 million", hint: "330M / 2.5", explanation: "330M / 2.5 = 132M households" },
+                ]
+            },
+            caseScenarios: {
+                medium: [
+                    { q: "Coffee shop: 200 customers/day, $5 avg ticket. Daily revenue?", a: "$1,000", hint: "200 × $5", explanation: "200 × $5 = $1,000/day" },
+                    { q: "SaaS company: 10,000 users, $50/month. Monthly recurring revenue?", a: "$500,000", hint: "10K × $50", explanation: "10,000 × $50 = $500K MRR" },
+                    { q: "Retail store: $2M revenue, 40% gross margin. Gross profit?", a: "$800,000", hint: "$2M × 40%", explanation: "$2M × 40% = $800K" },
+                    { q: "Factory: 100 workers, $50K avg salary. Annual labor cost?", a: "$5 million", hint: "100 × $50K", explanation: "100 × $50K = $5M" },
+                    { q: "Restaurant: 50 seats, 3 turns/night, $30 avg check. Nightly revenue?", a: "$4,500", hint: "50 × 3 × $30", explanation: "50 × 3 × $30 = $4,500" },
+                    { q: "E-commerce: 1M visitors/month, 2% conversion, $75 AOV. Monthly revenue?", a: "$1.5 million", hint: "1M × 2% × $75", explanation: "20K orders × $75 = $1.5M" },
+                    { q: "Subscription box: 25,000 subscribers, $40/box, 4 boxes/year. Annual revenue?", a: "$4 million", hint: "25K × $40 × 4", explanation: "25K × $160/year = $4M" },
+                    { q: "Gym: 2,000 members, $60/month membership. Monthly revenue?", a: "$120,000", hint: "2,000 × $60", explanation: "2,000 × $60 = $120K" },
+                    { q: "Consulting firm: 50 consultants, 80% utilization, $200/hr, 2000 hrs/yr. Revenue?", a: "$16 million", hint: "50 × 80% × 2000 × $200", explanation: "40 utilized × 2000 hrs × $200 = $16M" },
+                ],
+                hard: [
+                    { q: "US smartphone market: 330M people, 80% own phones, 30% buy new yearly. Annual unit sales?", a: "~80 million", hint: "330M × 80% × 30%", explanation: "264M owners × 30% = 79.2M units" },
+                    { q: "Client in India: target 0.1% of 1.4B population, $20 product. Revenue potential?", a: "$28 million", hint: "0.1% of 1.4B × $20", explanation: "1.4M customers × $20 = $28M" },
+                    { q: "EU pharma launch: 65+ population (20% of 420M), 15% have condition. Patient pool?", a: "12.6 million", hint: "84M seniors × 15%", explanation: "420M × 20% × 15% = 12.6M patients" },
+                    { q: "Mexico retail expansion: 130M people, 60% urban, 25% target demo. Market size (people)?", a: "~20 million", hint: "130M × 60% × 25%", explanation: "130M × 60% × 25% = 19.5M" },
+                    { q: "US pet food: 70M dog-owning households, $500/yr avg spend. Market size?", a: "$35 billion", hint: "70M × $500", explanation: "70M × $500 = $35B market" },
+                    { q: "Canada telecom: 40M people, 85% mobile penetration, $70/month ARPU. Annual market?", a: "~$29 billion", hint: "34M × $70 × 12", explanation: "34M × $840/yr = $28.6B" },
+                    { q: "China e-commerce: 910M urban, 70% shop online, $400 annual spend. Market size?", a: "$255 billion", hint: "910M × 70% × $400", explanation: "637M shoppers × $400 = $255B" },
+                    { q: "Client's product: $100 price, 60% gross margin, 20% operating margin. Profit per unit?", a: "$20", hint: "Operating margin × price", explanation: "$100 × 20% = $20 profit" },
+                    { q: "Investment: $2M upfront, $300K annual cash flow. Simple payback period?", a: "6.7 years", hint: "Investment / Annual CF", explanation: "$2M / $300K = 6.67 years" },
+                    { q: "PE firm: Buy at 8x EBITDA ($5M), grow to $8M EBITDA, sell at 10x. Return?", a: "$80M (2x)", hint: "Entry: 8×5=40M, Exit: 10×8=80M", explanation: "Bought at $40M, sell at $80M = 2x return" },
+                    { q: "US market entry: 130M households, 20% addressable, 5% capture, $200 LTV. Revenue?", a: "$260 million", hint: "130M × 20% × 5% × $200", explanation: "1.3M customers × $200 = $260M" },
+                    { q: "Break-even analysis: FC $500K, price $100, VC $60. Units to break even?", a: "12,500", hint: "FC / (Price - VC)", explanation: "$500K / $40 CM = 12,500 units" },
+                    { q: "LTV calculation: $50/month, 24-month avg lifespan, 70% margin. LTV?", a: "$840", hint: "$50 × 24 × 70%", explanation: "$1,200 revenue × 70% = $840 LTV" },
+                    { q: "CAC payback: $200 CAC, $40 monthly margin. Months to payback?", a: "5 months", hint: "CAC / Monthly margin", explanation: "$200 / $40 = 5 months" },
+                ]
+            }
+        };
+
+        // ===== STATE =====
+        let currentUser = null; // Will hold username after login
+        
+        let state = {
+            category: 'mixed',
+            difficulty: 'all',
+            totalQuestions: 0,
+            correct: 0,
+            incorrect: 0,
+            streak: 0,
+            maxStreak: 0,
+            currentQuestion: null,
+            flipped: false,
+            hintShown: false,
+            // Spaced repetition for wrong answers
+            wrongQueue: [],        // Questions answered wrong, waiting to be repeated
+            questionsSinceWrong: 0, // Counter to space out repeat questions
+            masteredWrong: [],      // Questions from wrongQueue that were answered correctly
+            // Session tracking
+            sessionStart: new Date().toISOString(),
+            questionLog: []        // Log of all questions in this session
+        };
+
+        // ===== DOM ELEMENTS =====
+        const elements = {
+            totalQuestions: document.getElementById('totalQuestions'),
+            correctCount: document.getElementById('correctCount'),
+            incorrectCount: document.getElementById('incorrectCount'),
+            streakCount: document.getElementById('streakCount'),
+            accuracy: document.getElementById('accuracy'),
+            questionType: document.getElementById('questionType'),
+            difficultyBadge: document.getElementById('difficultyBadge'),
+            questionText: document.getElementById('questionText'),
+            answerValue: document.getElementById('answerValue'),
+            answerExplanation: document.getElementById('answerExplanation'),
+            flashcard: document.getElementById('flashcard'),
+            flashcardContainer: document.getElementById('flashcardContainer'),
+            ratingSection: document.getElementById('ratingSection'),
+            wrongBtn: document.getElementById('wrongBtn'),
+            correctBtn: document.getElementById('correctBtn'),
+            hintBtn: document.getElementById('hintBtn'),
+            hintText: document.getElementById('hintText'),
+            repeatBadge: document.getElementById('repeatBadge'),
+            shortcutsToggle: document.getElementById('shortcutsToggle'),
+            shortcutsGrid: document.getElementById('shortcutsGrid'),
+            historyBtn: document.getElementById('historyBtn'),
+            historyModal: document.getElementById('historyModal'),
+            modalClose: document.getElementById('modalClose'),
+            historyContent: document.getElementById('historyContent'),
+            friendsContent: document.getElementById('friendsContent'),
+            tabMyHistory: document.getElementById('tabMyHistory'),
+            tabFriends: document.getElementById('tabFriends'),
+            // Auth elements
+            authScreen: document.getElementById('authScreen'),
+            authForm: document.getElementById('authForm'),
+            authUsername: document.getElementById('authUsername'),
+            authPassword: document.getElementById('authPassword'),
+            authSubmitBtn: document.getElementById('authSubmitBtn'),
+            authError: document.getElementById('authError'),
+            loginTab: document.getElementById('loginTab'),
+            registerTab: document.getElementById('registerTab'),
+            // User elements
+            userInfo: document.getElementById('userInfo'),
+            userAvatar: document.getElementById('userAvatar'),
+            userName: document.getElementById('userName'),
+            logoutBtn: document.getElementById('logoutBtn')
+        };
+
+        // ===== FUNCTIONS =====
+        function getRandomQuestion() {
+            // Spaced repetition logic:
+            // Questions repeat 3 times with increasing intervals
+            // Repeat 1: 3-10 questions later
+            // Repeat 2: 10-15 questions later
+            // Repeat 3: 15-20 questions later
+            
+            // Check if any question in wrongQueue is ready to be shown
+            let readyQuestion = null;
+            let readyIndex = -1;
+            
+            for (let i = 0; i < state.wrongQueue.length; i++) {
+                const q = state.wrongQueue[i];
+                const questionsSince = state.totalQuestions - q.addedAt;
+                
+                // Determine spacing based on repeat count
+                let minSpacing, maxSpacing;
+                if (q.repeatCount === 0) {
+                    minSpacing = 3; maxSpacing = 10;
+                } else if (q.repeatCount === 1) {
+                    minSpacing = 10; maxSpacing = 15;
+                } else {
+                    minSpacing = 15; maxSpacing = 20;
+                }
+                
+                // Check if ready to show
+                if (questionsSince >= minSpacing && 
+                    (questionsSince >= maxSpacing || Math.random() > 0.5)) {
+                    readyQuestion = q;
+                    readyIndex = i;
+                    break;
+                }
+            }
+            
+            if (readyQuestion) {
+                // Remove from queue
+                state.wrongQueue.splice(readyIndex, 1);
+                
+                // Mark as a repeat question
+                return { ...readyQuestion, isRepeat: true };
+            }
+            
+            // Regular question selection
+            let pool = [];
+            
+            // Get questions from all categories and all difficulties
+            Object.keys(questionBank).forEach(cat => {
+                pool = pool.concat(questionBank[cat].easy || []);
+                pool = pool.concat(questionBank[cat].medium || []);
+                pool = pool.concat(questionBank[cat].hard || []);
+            });
+
+            const question = pool[Math.floor(Math.random() * pool.length)];
+            
+            // Determine difficulty and category for display
+            let displayDifficulty = 'medium';
+            let displayCategory = 'mixed';
+            
+            Object.keys(questionBank).forEach(cat => {
+                ['easy', 'medium', 'hard'].forEach(diff => {
+                    if (questionBank[cat][diff]?.includes(question)) {
+                        displayDifficulty = diff;
+                        displayCategory = cat;
+                    }
+                });
+            });
+
+            state.questionsSinceWrong++;
+            return { ...question, displayDifficulty, displayCategory, isRepeat: false, repeatCount: 0 };
+        }
+
+        function loadQuestion() {
+            state.flipped = false;
+            state.currentQuestion = getRandomQuestion();
+            
+            // Reset card
+            elements.flashcard.classList.remove('flipped');
+            elements.ratingSection.classList.remove('show');
+            elements.flashcardContainer.classList.remove('swipe-left', 'swipe-right');
+            
+            // Add enter animation
+            elements.flashcardContainer.classList.add('enter');
+            setTimeout(() => {
+                elements.flashcardContainer.classList.remove('enter');
+            }, 400);
+            
+            // Update question
+            elements.questionText.textContent = state.currentQuestion.q;
+            elements.answerValue.textContent = state.currentQuestion.a;
+            elements.answerExplanation.textContent = state.currentQuestion.explanation;
+            
+            // Set question type
+            const typeNames = {
+                fractions: 'Fraction Conversion',
+                percentages: 'Percentage Calculation',
+                multiplication: 'Mental Multiplication',
+                profit: 'Profit & Margin',
+                estimation: 'Estimation',
+                timeConversions: 'Time Conversions',
+                population: 'Market Sizing',
+                caseScenarios: 'Case Math'
+            };
+            elements.questionType.textContent = typeNames[state.currentQuestion.displayCategory] || 'Math Practice';
+            
+            // Set difficulty badge
+            const diff = state.currentQuestion.displayDifficulty;
+            elements.difficultyBadge.textContent = diff.charAt(0).toUpperCase() + diff.slice(1);
+            elements.difficultyBadge.className = `difficulty-badge ${diff}`;
+            
+            // Show/hide repeat badge
+            if (state.currentQuestion.isRepeat) {
+                const repeatNum = state.currentQuestion.repeatCount + 1;
+                elements.repeatBadge.textContent = `🔄 Review ${repeatNum}/3`;
+                elements.repeatBadge.style.display = 'inline-block';
+            } else {
+                elements.repeatBadge.style.display = 'none';
+            }
+            
+            // Reset hint
+            state.hintShown = false;
+            elements.hintBtn.classList.remove('shown');
+            elements.hintText.classList.remove('show');
+            elements.hintText.textContent = '';
+        }
+
+        function flipCard() {
+            if (state.flipped) return;
+            
+            state.flipped = true;
+            elements.flashcard.classList.add('flipped');
+            
+            // Show rating buttons after flip animation
+            setTimeout(() => {
+                elements.ratingSection.classList.add('show');
+            }, 300);
+        }
+
+        function markAnswer(isCorrect) {
+            state.totalQuestions++;
+            
+            // Log this question
+            state.questionLog.push({
+                question: state.currentQuestion.q,
+                answer: state.currentQuestion.a,
+                category: state.currentQuestion.displayCategory,
+                difficulty: state.currentQuestion.displayDifficulty,
+                isCorrect: isCorrect,
+                isRepeat: state.currentQuestion.isRepeat || false,
+                timestamp: new Date().toISOString()
+            });
+            
+            if (isCorrect) {
+                state.correct++;
+                state.streak++;
+                if (state.streak > state.maxStreak) state.maxStreak = state.streak;
+                elements.flashcardContainer.classList.add('swipe-right');
+                
+                // If this was a repeat question answered correctly
+                if (state.currentQuestion.isRepeat) {
+                    const newRepeatCount = state.currentQuestion.repeatCount + 1;
+                    
+                    // If hasn't completed all 3 repeats, add back to queue for next interval
+                    if (newRepeatCount < 3) {
+                        state.wrongQueue.push({
+                            ...state.currentQuestion,
+                            repeatCount: newRepeatCount,
+                            addedAt: state.totalQuestions
+                        });
+                    } else {
+                        // Completed all 3 repeats successfully - fully mastered!
+                        state.masteredWrong.push(state.currentQuestion);
+                    }
+                }
+            } else {
+                state.incorrect++;
+                state.streak = 0;
+                elements.flashcardContainer.classList.add('swipe-left');
+                
+                // Add to wrong queue for spaced repetition
+                // Check if already in queue (avoid duplicates)
+                const existingIndex = state.wrongQueue.findIndex(q => q.q === state.currentQuestion.q);
+                
+                if (existingIndex === -1) {
+                    // New wrong question - add to queue
+                    state.wrongQueue.push({
+                        ...state.currentQuestion,
+                        repeatCount: 0,
+                        addedAt: state.totalQuestions
+                    });
+                } else {
+                    // Already in queue - reset its timing (got it wrong again)
+                    state.wrongQueue[existingIndex].addedAt = state.totalQuestions;
+                    // Don't reset repeatCount - keep progress but restart interval
+                }
+            }
+            
+            updateStats();
+            
+            // Auto-save session every 5 questions
+            if (state.totalQuestions % 5 === 0) {
+                saveSession();
+            }
+            
+            // Load next question after animation
+            setTimeout(() => {
+                loadQuestion();
+            }, 400);
+        }
+
+        function updateStats() {
+            elements.totalQuestions.textContent = state.totalQuestions;
+            elements.correctCount.textContent = state.correct;
+            elements.incorrectCount.textContent = state.incorrect;
+            elements.streakCount.textContent = state.streak;
+            
+            const accuracy = state.totalQuestions > 0 
+                ? Math.round((state.correct / state.totalQuestions) * 100) 
+                : 0;
+            elements.accuracy.textContent = accuracy + '%';
+        }
+
+        function showHint() {
+            if (state.hintShown || state.flipped) return;
+            state.hintShown = true;
+            elements.hintBtn.classList.add('shown');
+            elements.hintText.textContent = state.currentQuestion.hint;
+            elements.hintText.classList.add('show');
+        }
+
+        // ===== HISTORY FUNCTIONS =====
+        async function saveSession() {
+            if (state.questionLog.length === 0 || !currentUser) return;
+            
+            const sessionData = {
+                timestamp: state.sessionStart,
+                endTime: new Date().toISOString(),
+                totalQuestions: state.totalQuestions,
+                correct: state.correct,
+                incorrect: state.incorrect,
+                maxStreak: state.maxStreak,
+                accuracy: state.totalQuestions > 0 ? Math.round((state.correct / state.totalQuestions) * 100) : 0,
+                questions: state.questionLog,
+                masteredCount: state.masteredWrong.length
+            };
+            
+            try {
+                await fetch('/api/save-session', {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'X-Username': currentUser
+                    },
+                    body: JSON.stringify(sessionData)
+                });
+            } catch (e) {
+                console.log('Could not save session:', e);
+            }
+        }
+
+        async function loadHistory() {
+            if (!currentUser) return;
+            
+            try {
+                const response = await fetch('/api/history', {
+                    headers: { 'X-Username': currentUser }
+                });
+                const data = await response.json();
+                renderHistory(data.sessions || []);
+            } catch (e) {
+                elements.historyContent.innerHTML = '<div class="no-history">Could not load history. Make sure the server is running.</div>';
+            }
+        }
+
+        async function loadFriends() {
+            try {
+                const response = await fetch('/api/friends');
+                const data = await response.json();
+                renderFriends(data.friends || []);
+            } catch (e) {
+                elements.friendsContent.innerHTML = '<div class="no-history">Could not load friends.</div>';
+            }
+        }
+
+        function renderHistory(sessions) {
+            if (sessions.length === 0) {
+                elements.historyContent.innerHTML = '<div class="no-history">No sessions yet. Start practicing to build your history!</div>';
+                return;
+            }
+            
+            // Sort by most recent first
+            sessions.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            let html = '';
+            sessions.forEach((session, index) => {
+                const date = new Date(session.timestamp);
+                const dateStr = date.toLocaleDateString('en-US', { 
+                    weekday: 'short', 
+                    month: 'short', 
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit'
+                });
+                
+                const accuracy = session.accuracy || 0;
+                let accuracyClass = 'poor';
+                if (accuracy >= 80) accuracyClass = 'good';
+                else if (accuracy >= 60) accuracyClass = 'medium';
+                
+                html += `
+                    <div class="session-card" data-index="${index}">
+                        <div class="session-header">
+                            <span class="session-date">${dateStr}</span>
+                            <span class="session-accuracy ${accuracyClass}">${accuracy}%</span>
+                        </div>
+                        <div class="session-stats">
+                            <span class="session-stat">📝 ${session.totalQuestions} questions</span>
+                            <span class="session-stat">✅ ${session.correct} correct</span>
+                            <span class="session-stat">❌ ${session.incorrect} wrong</span>
+                            <span class="session-stat">🔥 ${session.maxStreak || 0} streak</span>
+                        </div>
+                        <div class="expand-hint">Click to see questions</div>
+                        <div class="session-details">
+                            ${renderQuestionLog(session.questions || [])}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            elements.historyContent.innerHTML = html;
+            
+            // Add click handlers to session cards
+            document.querySelectorAll('.session-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    card.classList.toggle('expanded');
+                });
+            });
+        }
+
+        function renderQuestionLog(questions) {
+            if (!questions || questions.length === 0) {
+                return '<div class="no-history">No question details available</div>';
+            }
+            
+            return questions.map(q => `
+                <div class="question-log ${q.isCorrect ? 'correct' : 'wrong'}">
+                    <span class="question-log-result ${q.isCorrect ? 'correct' : 'wrong'}">
+                        ${q.isCorrect ? '✓' : '✗'}${q.isRepeat ? ' (review)' : ''}
+                    </span>
+                    <div class="question-log-q">${q.question}</div>
+                    <div class="question-log-a">Answer: ${q.answer}</div>
+                </div>
+            `).join('');
+        }
+
+        function renderFriends(friends) {
+            if (friends.length === 0) {
+                elements.friendsContent.innerHTML = '<div class="no-history">No users yet. Be the first!</div>';
+                return;
+            }
+            
+            let html = '';
+            friends.forEach(friend => {
+                const isCurrentUser = friend.username === currentUser;
+                const initial = friend.username.charAt(0).toUpperCase();
+                
+                let accuracyClass = 'poor';
+                if (friend.accuracy >= 80) accuracyClass = 'good';
+                else if (friend.accuracy >= 60) accuracyClass = 'medium';
+                
+                // Format last active
+                let lastActive = 'Never';
+                if (friend.lastActive && friend.lastActive !== 'Never') {
+                    const date = new Date(friend.lastActive);
+                    const now = new Date();
+                    const diffMs = now - date;
+                    const diffMins = Math.floor(diffMs / 60000);
+                    const diffHours = Math.floor(diffMs / 3600000);
+                    const diffDays = Math.floor(diffMs / 86400000);
+                    
+                    if (diffMins < 1) lastActive = 'Just now';
+                    else if (diffMins < 60) lastActive = `${diffMins}m ago`;
+                    else if (diffHours < 24) lastActive = `${diffHours}h ago`;
+                    else if (diffDays < 7) lastActive = `${diffDays}d ago`;
+                    else lastActive = date.toLocaleDateString();
+                }
+                
+                html += `
+                    <div class="friend-card ${isCurrentUser ? 'current-user' : ''}">
+                        <div class="friend-avatar">${initial}</div>
+                        <div class="friend-info">
+                            <div class="friend-name">${friend.username}${isCurrentUser ? ' (you)' : ''}</div>
+                            <div class="friend-stats">
+                                ${friend.totalQuestions} questions • ${friend.totalCorrect} correct • 🔥 ${friend.bestStreak} best streak
+                            </div>
+                            <div class="friend-last-active">Last active: ${lastActive}</div>
+                        </div>
+                        <div class="friend-accuracy ${accuracyClass}">${friend.accuracy}%</div>
+                    </div>
+                `;
+            });
+            
+            elements.friendsContent.innerHTML = html;
+        }
+
+        // ===== AUTH FUNCTIONS =====
+        let isLoginMode = true;
+
+        function setAuthMode(loginMode) {
+            isLoginMode = loginMode;
+            elements.loginTab.classList.toggle('active', loginMode);
+            elements.registerTab.classList.toggle('active', !loginMode);
+            elements.authSubmitBtn.textContent = loginMode ? 'Login' : 'Register';
+            elements.authError.textContent = '';
+        }
+
+        async function handleAuth(e) {
+            e.preventDefault();
+            
+            const username = elements.authUsername.value.trim();
+            const password = elements.authPassword.value;
+            
+            if (!username || !password) {
+                elements.authError.textContent = 'Please fill in all fields';
+                return;
+            }
+            
+            const endpoint = isLoginMode ? '/api/login' : '/api/register';
+            
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    loginSuccess(data.username);
+                } else {
+                    elements.authError.textContent = data.error || 'Authentication failed';
+                }
+            } catch (e) {
+                elements.authError.textContent = 'Could not connect to server';
+            }
+        }
+
+        function loginSuccess(username) {
+            currentUser = username;
+            localStorage.setItem('casecracker_user', username);
+            
+            // Update UI
+            elements.authScreen.classList.add('hidden');
+            elements.userAvatar.textContent = username.charAt(0).toUpperCase();
+            elements.userName.textContent = username;
+            
+            // Reset session for new login
+            state.sessionStart = new Date().toISOString();
+            state.questionLog = [];
+        }
+
+        function logout() {
+            // Save current session before logout
+            if (state.questionLog.length > 0) {
+                saveSession();
+            }
+            
+            currentUser = null;
+            localStorage.removeItem('casecracker_user');
+            
+            // Reset state
+            state.totalQuestions = 0;
+            state.correct = 0;
+            state.incorrect = 0;
+            state.streak = 0;
+            state.maxStreak = 0;
+            state.questionLog = [];
+            state.wrongQueue = [];
+            state.masteredWrong = [];
+            updateStats();
+            
+            // Show auth screen
+            elements.authScreen.classList.remove('hidden');
+            elements.authUsername.value = '';
+            elements.authPassword.value = '';
+            elements.authError.textContent = '';
+        }
+
+        function checkExistingLogin() {
+            const savedUser = localStorage.getItem('casecracker_user');
+            if (savedUser) {
+                loginSuccess(savedUser);
+            }
+        }
+
+        function openHistoryModal() {
+            elements.historyModal.classList.add('show');
+            // Default to My History tab
+            elements.tabMyHistory.classList.add('active');
+            elements.tabFriends.classList.remove('active');
+            elements.historyContent.classList.add('active');
+            elements.friendsContent.classList.remove('active');
+            loadHistory();
+        }
+
+        function switchToTab(tab) {
+            if (tab === 'history') {
+                elements.tabMyHistory.classList.add('active');
+                elements.tabFriends.classList.remove('active');
+                elements.historyContent.classList.add('active');
+                elements.friendsContent.classList.remove('active');
+                loadHistory();
+            } else {
+                elements.tabMyHistory.classList.remove('active');
+                elements.tabFriends.classList.add('active');
+                elements.historyContent.classList.remove('active');
+                elements.friendsContent.classList.add('active');
+                loadFriends();
+            }
+        }
+
+        function closeHistoryModal() {
+            elements.historyModal.classList.remove('show');
+        }
+
+        // ===== SWIPE HANDLING =====
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        function handleSwipe() {
+            if (!state.flipped) return;
+            
+            const swipeThreshold = 80;
+            const diff = touchEndX - touchStartX;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    // Swiped right = correct
+                    markAnswer(true);
+                } else {
+                    // Swiped left = wrong
+                    markAnswer(false);
+                }
+            }
+        }
+
+        // ===== EVENT LISTENERS =====
+        elements.flashcard.addEventListener('click', flipCard);
+
+        elements.wrongBtn.addEventListener('click', () => markAnswer(false));
+        elements.correctBtn.addEventListener('click', () => markAnswer(true));
+        elements.hintBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            showHint();
+        });
+
+        // Touch events for swipe
+        elements.flashcardContainer.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+
+        elements.flashcardContainer.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        }, { passive: true });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (!state.flipped) {
+                    flipCard();
+                }
+            } else if (e.code === 'KeyH' && !state.flipped) {
+                showHint();
+            } else if (state.flipped) {
+                if (e.code === 'ArrowLeft' || e.code === 'KeyA') {
+                    markAnswer(false);
+                } else if (e.code === 'ArrowRight' || e.code === 'KeyD') {
+                    markAnswer(true);
+                }
+            }
+        });
+
+        elements.shortcutsToggle.addEventListener('click', () => {
+            elements.shortcutsGrid.classList.toggle('show');
+        });
+
+        // History modal
+        elements.historyBtn.addEventListener('click', openHistoryModal);
+        elements.modalClose.addEventListener('click', closeHistoryModal);
+        elements.historyModal.addEventListener('click', (e) => {
+            if (e.target === elements.historyModal) {
+                closeHistoryModal();
+            }
+        });
+
+        // Modal tabs
+        elements.tabMyHistory.addEventListener('click', () => switchToTab('history'));
+        elements.tabFriends.addEventListener('click', () => switchToTab('friends'));
+
+        // Auth events
+        elements.loginTab.addEventListener('click', () => setAuthMode(true));
+        elements.registerTab.addEventListener('click', () => setAuthMode(false));
+        elements.authForm.addEventListener('submit', handleAuth);
+        elements.logoutBtn.addEventListener('click', logout);
+
+        // Save session when leaving page
+        window.addEventListener('beforeunload', () => {
+            if (state.questionLog.length > 0 && currentUser) {
+                // Use sendBeacon for reliable save on page close
+                const sessionData = {
+                    timestamp: state.sessionStart,
+                    endTime: new Date().toISOString(),
+                    totalQuestions: state.totalQuestions,
+                    correct: state.correct,
+                    incorrect: state.incorrect,
+                    maxStreak: state.maxStreak,
+                    accuracy: state.totalQuestions > 0 ? Math.round((state.correct / state.totalQuestions) * 100) : 0,
+                    questions: state.questionLog,
+                    masteredCount: state.masteredWrong.length
+                };
+                const blob = new Blob([JSON.stringify(sessionData)], { type: 'application/json' });
+                navigator.sendBeacon('/api/save-session?user=' + currentUser, blob);
+            }
+        });
+
+        // Initialize
+        checkExistingLogin();
+        loadQuestion();
+        updateStats();
+    </script>
+</body>
+</html>
